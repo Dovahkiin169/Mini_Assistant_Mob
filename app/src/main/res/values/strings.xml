@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Mini Assistant Basic</string>
+    <string name="HistoryKey">HistKeyData</string>
 </resources>

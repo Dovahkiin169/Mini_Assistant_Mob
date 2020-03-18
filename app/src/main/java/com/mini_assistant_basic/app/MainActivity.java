@@ -10,8 +10,12 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 import java.text.SimpleDateFormat;
@@ -24,8 +28,10 @@ import java.util.Locale;
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
     TextView Activate;
+    ListView ListView;
+    ArrayList<String>  AllhistoryView = new ArrayList<String>();
     TextToSpeech textToSpeech;
-
+    boolean history_adder = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -38,6 +44,15 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 1);
 
         Activate = findViewById(R.id.activate);
+        ListView = findViewById(R.id.listView);
+        AllhistoryView = Utility.getHistoryData(getApplicationContext(),getString(R.string.HistoryKey));
+
+        if(!AllhistoryView.isEmpty())
+        {
+            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView );
+            ListView.setAdapter(arrayAdapter);
+        }
+
 
         Activate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -46,6 +61,15 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH);
                 startActivityForResult(intent, 10);
+            }
+        });
+        ListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // When clicked, show a toast with the TextView text or do whatever you need.
+                history_adder = true;
+                getWordFromPhrase(String.valueOf(((TextView) view).getText()));
+                history_adder = false;
+                flag=false;
             }
         });
     }
@@ -107,19 +131,31 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Log.e ("time","Right now is: " + String.valueOf(formattedDate));
                 flag = true;
                 Toast.makeText(getApplicationContext(), "Right now is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
             }
             else if( ((AllWords.get(0).equals("date")) || (AllWords.get(0).equals("what") && AllWords.get(1).equals("date"))  || (AllWords.get(0).equals("what") && AllWords.get(1).equals("day")) || (  ( (AllWords.get(0).equals("what") && AllWords.get(1).equals("day")) || (AllWords.get(0).equals("what") && AllWords.get(1).equals("date")) ) && ((AllWords.get(2).equals("it") && AllWords.get(3).equals("is")) || (AllWords.get(2).equals("is") && AllWords.get(3).equals("it")))) || (  ( (AllWords.get(0).equals("what") && AllWords.get(1).equals("day")) || (AllWords.get(0).equals("what") && AllWords.get(1).equals("date")) ) && ((AllWords.get(2).equals("is") && AllWords.get(3).equals("today")) || (AllWords.get(2).equals("today") && AllWords.get(3).equals("is"))))) && !flag )
             {
                 Calendar c = Calendar.getInstance();
-                SimpleDateFormat sdf = new SimpleDateFormat("EEEE,MMMM, dd, yyyy ");
+                SimpleDateFormat sdf = new SimpleDateFormat("EEEE, MMMM, dd, yyyy ");
                 String formattedDate = sdf.format(c.getTime());
 
                 textToSpeech.speak("Today is: " + String.valueOf(formattedDate), TextToSpeech.QUEUE_ADD, null);
                 Log.e ("Date","Today is: " + String.valueOf(formattedDate));
                 flag = true;
                 Toast.makeText(getApplicationContext(), "Today is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
             }
-            else if((     AllWords.get(0).equals("alarm") ||
+            else if((
                         ((AllWords.get(0).equals("set") && AllWords.get(1).equals("alarm")) || (AllWords.get(0).equals("set") && AllWords.get(1).equals("an")  && AllWords.get(2).equals("alarm"))) ||
                         (((AllWords.get(0).equals("set") && AllWords.get(1).equals("alarm")) || (AllWords.get(0).equals("set") && AllWords.get(1).equals("an")  && AllWords.get(2).equals("alarm")))  &&  ( (AllWords.get(3).equals("on")) || (AllWords.get(3).equals("at")) || (AllWords.get(3).equals("for")) )  && ( isNumeric(AllWords.get(4)) || ( (AllWords.get(5).equals("a.m.")) || (AllWords.get(5).equals("p.m.")) || (AllWords.get(5).equals("hours")) || (AllWords.get(5).equals("hour")) )))) && !flag)
             {
@@ -135,6 +171,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         }
                     }, 2000);
                     alarmFlag = true;
+                    if(!history_adder) {
+                        AllhistoryView.add(0, result);
+                        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                        ListView.setAdapter(arrayAdapter);
+                        Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                    }
                 }
                 else if(isNumeric(AllWords.get(4)))
                 {
@@ -151,6 +193,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             }
                         }, 2000);
                         alarmFlag = true;
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                     }
                     else if(AllWords.size()>=6 &&(isNumeric(AllWords.get(4)) &&(   (AllWords.get(5).equals("a.m.")) || (AllWords.get(5).equals("hour")) || (AllWords.get(5).equals("hours")))    ))
                     {
@@ -162,7 +210,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         {
                             set_Alarm(Integer.parseInt(AllWords.get(4)), Integer.parseInt(AllWords.get(6)));
                         }
-
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                         flag = true;
                         alarmFlag = false;
                     }
@@ -175,6 +228,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         else
                         {
                             set_Alarm(Integer.parseInt(AllWords.get(4))+12, Integer.parseInt(AllWords.get(6)));
+                        }
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                         }
                         flag = true;
                         alarmFlag = false;
@@ -190,7 +249,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         {
                             set_Alarm(Integer.parseInt(AllWords.get(4)), Integer.parseInt(AllWords.get(6)));
                         }
-
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                         flag = true;
                     }
                 }
@@ -209,6 +273,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             }
                         }, 2000);
                         alarmFlag = true;
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                     }
                     else if(AllWords.size()>=5 &&(isNumeric(AllWords.get(3)) &&(   (AllWords.get(4).equals("a.m.")) || (AllWords.get(4).equals("hour")) || (AllWords.get(4).equals("hours")))    ))
                     {
@@ -221,6 +291,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(3)), Integer.parseInt(AllWords.get(5)));
                         }
 
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                         flag = true;
                         alarmFlag = false;
                     }
@@ -233,6 +309,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         else
                         {
                             set_Alarm(Integer.parseInt(AllWords.get(3))+12, Integer.parseInt(AllWords.get(5)));
+                        }
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                         }
                         flag = true;
                         alarmFlag = false;
@@ -248,7 +330,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         {
                             set_Alarm(Integer.parseInt(AllWords.get(3)), Integer.parseInt(AllWords.get(5)));
                         }
-
+                        if(!history_adder) {
+                            AllhistoryView.add(0, result);
+                            ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                            ListView.setAdapter(arrayAdapter);
+                            Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                        }
                         flag = true;
                     }
                 }
@@ -295,6 +382,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 textToSpeech.speak("Right now is: " + String.valueOf(formattedDate), TextToSpeech.QUEUE_ADD, null);
                 Log.e ("time","Right now is: " + String.valueOf(formattedDate));
                 Toast.makeText(getApplicationContext(), "Right now is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
                 flag = true;
             }
             else if(result.equals("date") && !flag )
@@ -306,6 +399,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 textToSpeech.speak("Today is: " + String.valueOf(formattedDate), TextToSpeech.QUEUE_ADD, null);
                 Log.e ("Date","Today is: " + String.valueOf(formattedDate));
                 flag = true;
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
                 Toast.makeText(getApplicationContext(), "Today is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
             }
             else if (result.equals("alarm") && !flag)
@@ -320,6 +419,12 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         startActivityForResult(intent, 10);
                     }
                 }, 2000);
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
                 alarmFlag = true;
 
             }
