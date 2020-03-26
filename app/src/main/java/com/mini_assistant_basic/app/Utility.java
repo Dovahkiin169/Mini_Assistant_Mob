@@ -2,10 +2,7 @@ package com.mini_assistant_basic.app;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.preference.PreferenceManager;
-
 import java.util.ArrayList;
-import java.util.List;
 
 public class Utility
  {

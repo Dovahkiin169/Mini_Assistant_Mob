@@ -6,12 +6,10 @@ import android.os.Handler;
 import android.provider.AlarmClock;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
-import android.support.annotation.Nullable;
-import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -22,14 +20,27 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+
+import static java.util.Map.Entry.comparingByValue;
+import static java.util.stream.Collectors.toMap;
 
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
     TextView Activate;
     ListView ListView;
+    ListView MostUsed;
     ArrayList<String>  AllhistoryView = new ArrayList<String>();
+    ArrayList<String>  MostUsedList = new ArrayList<String>();
     TextToSpeech textToSpeech;
     boolean history_adder = false;
     @Override
@@ -45,14 +56,16 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
         Activate = findViewById(R.id.activate);
         ListView = findViewById(R.id.listView);
+        MostUsed = findViewById(R.id.most_used_commands);
         AllhistoryView = Utility.getHistoryData(getApplicationContext(),getString(R.string.HistoryKey));
 
         if(!AllhistoryView.isEmpty())
         {
             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView );
             ListView.setAdapter(arrayAdapter);
-        }
 
+        }
+        getMostUsedPhrases();
 
         Activate.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,6 +77,15 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
         });
         ListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                // When clicked, show a toast with the TextView text or do whatever you need.
+                history_adder = true;
+                getWordFromPhrase(String.valueOf(((TextView) view).getText()));
+                history_adder = false;
+                flag=false;
+            }
+        });
+        MostUsed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // When clicked, show a toast with the TextView text or do whatever you need.
                 history_adder = true;
@@ -461,4 +483,59 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     public void onInit(int i) {
 
     }
+
+    private ArrayList<String> getMostUsedPhrases() {
+
+        MostUsedList.clear();
+            Map<String, Integer> countMap = new HashMap<>();
+
+            for (String item: AllhistoryView) {
+
+                if (countMap.containsKey(item))
+                    countMap.put(item, countMap.get(item) + 1);
+                else
+                    countMap.put(item, 1);
+            }
+
+
+        Map<String, Integer> sorted = countMap
+                .entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .collect(
+                        toMap(Map.Entry::getKey, Map.Entry::getValue, (e1, e2) -> e2,
+                                LinkedHashMap::new));
+
+        ArrayList<String> keyList = new ArrayList<String>(sorted.keySet());
+        ArrayList<Integer> valueList = new ArrayList<Integer>(sorted.values());
+        for(int i =0; i <3; i++)
+        {
+            MostUsedList.add(keyList.get(i));
+        }
+
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, MostUsedList );
+        MostUsed.setAdapter(arrayAdapter);
+        return null;
+    }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_main, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.statistics:
+                Intent mySuperIntentS = new Intent(MainActivity.this, StatisticsActivity.class);
+                startActivity(mySuperIntentS);
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
 }
