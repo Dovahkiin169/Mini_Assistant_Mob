@@ -2,4 +2,9 @@
     <string name="app_name">Mini Assistant</string>
     <string name="HistoryKey">HistKeyData</string>
     <string name="MostUsedKey">MostUsedKey</string>
+
+    <string name="WidgetKey">WidgetKey</string>
+
+    <string name="appwidget_text">EXAMPLE</string>
+    <string name="add_widget">Add widget</string>
 </resources>

@@ -2,6 +2,7 @@ package com.mini_assistant_basic.app;
 
 import android.Manifest;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.AlarmClock;
 import android.speech.RecognizerIntent;
@@ -39,6 +40,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     TextView Activate;
     ListView ListView;
     ListView MostUsed;
+    boolean FlagFromWidget;
     ArrayList<String>  AllhistoryView = new ArrayList<String>();
     ArrayList<String>  MostUsedList = new ArrayList<String>();
     TextToSpeech textToSpeech;
@@ -48,6 +50,10 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            FlagFromWidget = extras.getBoolean("WidgetData");
+        }
         textToSpeech = new TextToSpeech(this, this, "com.google.android.tts");
 
         ActivityCompat.requestPermissions(MainActivity.this,
@@ -67,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         }
         getMostUsedPhrases();
 
-        Activate.setOnClickListener(new View.OnClickListener() {
+        /*Activate.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
@@ -75,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH);
                 startActivityForResult(intent, 10);
             }
-        });
+        });*/
         ListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // When clicked, show a toast with the TextView text or do whatever you need.
@@ -94,7 +100,21 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 flag=false;
             }
         });
+        if(FlagFromWidget)
+        {
+            StartVoiceButton(Activate);
+        }
+        FlagFromWidget = false;
     }
+
+    public void StartVoiceButton(View view)
+    {
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.ENGLISH);
+        startActivityForResult(intent, 10);
+    }
+
 
     public void set_Alarm(int hour, int minute) {
 
@@ -200,7 +220,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                     }
                 }
-                else if(isNumeric(AllWords.get(4)))
+                else if(isNumeric(AllWords.get(4)) && result.contains("alarm"))
                 {
                     if(( AllWords.get(0).equals("alarm") ||
                             ((AllWords.get(0).equals("set") && AllWords.get(1).equals("alarm")) || (AllWords.get(0).equals("set") && AllWords.get(1).equals("an")  && AllWords.get(2).equals("alarm")))) && AllWords.size()<=3)
@@ -280,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         flag = true;
                     }
                 }
-                else if (isNumeric(AllWords.get(3)))
+                else if (isNumeric(AllWords.get(3)) && result.contains("alarm"))
                 {
                     if(( AllWords.get(0).equals("alarm") ||
                             ((AllWords.get(0).equals("set") && AllWords.get(1).equals("alarm")) || (AllWords.get(0).equals("set") && AllWords.get(1).equals("an")  && AllWords.get(2).equals("alarm")))) && AllWords.size()<=3)
@@ -361,8 +381,23 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         flag = true;
                     }
                 }
+            }
+            else if(( AllWords.get(0).equals("browser") ||
+                    ((AllWords.get(0).equals("open") && AllWords.get(1).equals("browser")) ||
+                     (AllWords.get(0).equals("open") && AllWords.get(1).equals("a") && AllWords.get(2).equals("browser")))) && AllWords.size()<=3)
 
-
+            {
+                textToSpeech.speak("Opening a browser", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                startActivity(browserIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
             }
             else if ( isNumeric(AllWords.get(0)) && (AllWords.get(1).equals("a.m.") || AllWords.get(1).equals("p.m.") || (AllWords.get(1).equals("hour")) || (AllWords.get(1).equals("hours"))) && (AllWords.size()>=3 && isNumeric(AllWords.get(2))) && !flag && alarmFlag)
             {
@@ -456,6 +491,20 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 set_Alarm(Integer.parseInt(Res[0]), Integer.parseInt(Res[1]));
                 flag = true;
                 alarmFlag = false;
+            }
+            else if(result.equals("browser") && !flag)
+            {
+                textToSpeech.speak("Opening a browser", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                startActivity(browserIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, result);
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
             }
         }
         return -1;

@@ -19,6 +19,7 @@
         android:clickable="true"
         android:drawableTop="@drawable/microphone_sizer"
         android:gravity="center"
+        android:onClick="StartVoiceButton"
         android:paddingTop="35dip"
         android:textSize="25sp"
         app:layout_constraintBottom_toTopOf="@+id/textView3"
