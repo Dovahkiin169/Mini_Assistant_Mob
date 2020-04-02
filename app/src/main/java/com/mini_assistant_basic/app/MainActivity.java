@@ -559,6 +559,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ArrayList<Integer> valueList = new ArrayList<Integer>(sorted.values());
         for(int i =0; i <3; i++)
         {
+            if(!keyList.isEmpty())
             MostUsedList.add(keyList.get(i));
         }
 
