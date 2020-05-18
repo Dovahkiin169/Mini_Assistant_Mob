@@ -1,10 +1,12 @@
 package com.mini_assistant_basic.app;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Handler;
 import android.provider.AlarmClock;
+import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
 import android.speech.tts.TextToSpeech;
 import android.os.Bundle;
@@ -17,11 +19,14 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -37,12 +42,14 @@ import static java.util.stream.Collectors.toMap;
 
 public class MainActivity extends AppCompatActivity implements TextToSpeech.OnInitListener {
 
+    @SuppressLint("SimpleDateFormat")
+    SimpleDateFormat formatDate = new SimpleDateFormat("dd-MM-yy HH:mm");
     TextView Activate;
     ListView ListView;
     ListView MostUsed;
     boolean FlagFromWidget;
-    ArrayList<String>  AllhistoryView = new ArrayList<String>();
-    ArrayList<String>  MostUsedList = new ArrayList<String>();
+    ArrayList<String>  AllhistoryView = new ArrayList<>();
+    ArrayList<String>  MostUsedList = new ArrayList<>();
     TextToSpeech textToSpeech;
     boolean history_adder = false;
     @Override
@@ -119,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     public void set_Alarm(int hour, int minute) {
 
         if(hour==24)
-            hour=00;
+            hour= 0;
         Intent i = new Intent(AlarmClock.ACTION_SET_ALARM);
         i.putExtra(AlarmClock.EXTRA_MESSAGE, "Alarm");
         i.putExtra(AlarmClock.EXTRA_HOUR, hour);
@@ -145,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
 
     private int PhraseGetter(ArrayList<String> results) {
         for (String str : results) {
-            if (getWordFromPhrase(str) != -1) {
+            if (getWordFromPhrase(str.toLowerCase()) != -1) {
                 return getWordFromPhrase(str);
             }
         }
@@ -174,7 +181,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 flag = true;
                 Toast.makeText(getApplicationContext(), "Right now is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Time");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -191,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 flag = true;
                 Toast.makeText(getApplicationContext(), "Today is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Date");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -214,7 +221,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     }, 2000);
                     alarmFlag = true;
                     if(!history_adder) {
-                        AllhistoryView.add(0, result);
+                        AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                         ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                         ListView.setAdapter(arrayAdapter);
                         Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -236,7 +243,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         }, 2000);
                         alarmFlag = true;
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -253,7 +260,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(4)), Integer.parseInt(AllWords.get(6)));
                         }
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -272,7 +279,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(4))+12, Integer.parseInt(AllWords.get(6)));
                         }
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -292,7 +299,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(4)), Integer.parseInt(AllWords.get(6)));
                         }
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -316,7 +323,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         }, 2000);
                         alarmFlag = true;
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -334,7 +341,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                         }
 
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -353,7 +360,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(3))+12, Integer.parseInt(AllWords.get(5)));
                         }
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -373,7 +380,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                             set_Alarm(Integer.parseInt(AllWords.get(3)), Integer.parseInt(AllWords.get(5)));
                         }
                         if(!history_adder) {
-                            AllhistoryView.add(0, result);
+                            AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
                             ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                             ListView.setAdapter(arrayAdapter);
                             Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -392,7 +399,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
                 startActivity(browserIntent);
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Browser");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -427,6 +434,34 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 flag = true;
                 alarmFlag = false;
             }
+            else if(result.equals("open camera") && !flag)
+            {
+                textToSpeech.speak("Opening camera", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivity(takePictureIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Camera");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening camera", Toast.LENGTH_LONG).show();
+            }
+            else if(result.equals("play music") && !flag)
+            {
+                textToSpeech.speak("Opening music player", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent musicIntent = new Intent("android.intent.action.MUSIC_PLAYER");
+                startActivity(musicIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Music player");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening music player", Toast.LENGTH_LONG).show();
+            }
         }
         else
         {
@@ -440,7 +475,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Log.e ("time","Right now is: " + String.valueOf(formattedDate));
                 Toast.makeText(getApplicationContext(), "Right now is: " + String.valueOf(formattedDate), Toast.LENGTH_LONG).show();
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Time");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -457,7 +492,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Log.e ("Date","Today is: " + String.valueOf(formattedDate));
                 flag = true;
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Date");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
@@ -477,8 +512,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     }
                 }, 2000);
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
-                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                 }
@@ -499,13 +534,42 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
                 startActivity(browserIntent);
                 if(!history_adder) {
-                    AllhistoryView.add(0, result);
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Browser");
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                 }
                 Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
             }
+            else if(result.equals("camera") && !flag)
+            {
+                textToSpeech.speak("Opening camera", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                startActivity(takePictureIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Camera");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening camera", Toast.LENGTH_LONG).show();
+            }
+            else if(result.equals("music") && !flag)
+            {
+                textToSpeech.speak("Opening music player", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                Intent musicIntent = new Intent("android.intent.action.MUSIC_PLAYER");
+                startActivity(musicIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Music player");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                Toast.makeText(getApplicationContext(), "Opening music player", Toast.LENGTH_LONG).show();
+            }
+
         }
         return -1;
     }
@@ -539,7 +603,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             Map<String, Integer> countMap = new HashMap<>();
 
             for (String item: AllhistoryView) {
-
+                item = item.substring(17);
                 if (countMap.containsKey(item))
                     countMap.put(item, countMap.get(item) + 1);
                 else
@@ -563,7 +627,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             MostUsedList.add(keyList.get(i));
         }
 
-        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, MostUsedList );
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, MostUsedList);
         MostUsed.setAdapter(arrayAdapter);
         return null;
     }
@@ -577,15 +641,19 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
-        switch (item.getItemId()) {
-            case R.id.statistics:
-                Intent mySuperIntentS = new Intent(MainActivity.this, StatisticsActivity.class);
-                startActivity(mySuperIntentS);
-                finish();
-                return true;
-            default:
-                return super.onOptionsItemSelected(item);
+        if (item.getItemId() == R.id.statistics) {
+            Intent mySuperIntentS = new Intent(MainActivity.this, StatisticsActivity.class);
+            startActivity(mySuperIntentS);
+            finish();
+            return true;
         }
+        if (item.getItemId() == R.id.commands) {
+            Intent mySuperIntentS = new Intent(MainActivity.this, CommandsActivity.class);
+            startActivity(mySuperIntentS);
+            finish();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 }

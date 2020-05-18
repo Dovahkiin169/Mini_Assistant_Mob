@@ -51,7 +51,7 @@ public class StatisticsActivity extends AppCompatActivity
         Map<String, Integer> countMap = new HashMap<>();
 
         for (String item: AllhistoryView) {
-
+            item = item.substring(17);
             if (countMap.containsKey(item))
                 countMap.put(item, countMap.get(item) + 1);
             else

@@ -3,6 +3,8 @@
     package="com.mini_assistant_basic.app">
 
     <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-feature android:name="android.hardware.camera" android:required="true" />
 
     <application
         android:allowBackup="true"
@@ -36,6 +38,9 @@
         <activity
             android:name=".StatisticsActivity"
             android:label="My Statistics" />
+        <activity
+            android:name=".CommandsActivity"
+            android:label="Available commands" />
     </application>
 
 </manifest>

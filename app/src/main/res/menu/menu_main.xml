@@ -6,4 +6,7 @@
     <item android:id="@+id/statistics"
         android:title="Show my statistics"
         android:orderInCategory="100" />
+    <item android:id="@+id/commands"
+        android:title="Available commands"
+        android:orderInCategory="200" />
 </menu>
