@@ -92,18 +92,19 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
         ListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // When clicked, show a toast with the TextView text or do whatever you need.
-                history_adder = true;
-                getWordFromPhrase(String.valueOf(((TextView) view).getText()));
                 history_adder = false;
+                String s1 = String.valueOf(((TextView) view).getText()).toLowerCase().substring(String.valueOf(((TextView) view).getText()).toLowerCase().indexOf("]")+1);
+                getWordFromPhrase(s1.trim());
+                history_adder = true;
                 flag=false;
             }
         });
         MostUsed.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // When clicked, show a toast with the TextView text or do whatever you need.
-                history_adder = true;
-                getWordFromPhrase(String.valueOf(((TextView) view).getText()));
                 history_adder = false;
+                getWordFromPhrase(String.valueOf(((TextView) view).getText()).toLowerCase());
+                history_adder = true;
                 flag=false;
             }
         });
@@ -404,6 +405,31 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     ListView.setAdapter(arrayAdapter);
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                 }
+                flag = true;
+                Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
+            }
+            else if ((AllWords.get(0).equals("search") && AllWords.get(1).equals("for") && AllWords.size()>=3) && !flag)
+            {
+                textToSpeech.speak("Searching", TextToSpeech.QUEUE_ADD, null);
+                flag = true;
+                String google = "http://www.google.com/search?q=";
+                String search = "";
+                for ( int i=2; i < AllWords.size(); i++)
+                {
+                    search = search + AllWords.get(i);
+                }
+
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(google+search));
+
+              //  Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com"));
+                startActivity(browserIntent);
+                if(!history_adder) {
+                    AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Browser");
+                    ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, AllhistoryView);
+                    ListView.setAdapter(arrayAdapter);
+                    Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
+                }
+                flag = true;
                 Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
             }
             else if ( isNumeric(AllWords.get(0)) && (AllWords.get(1).equals("a.m.") || AllWords.get(1).equals("p.m.") || (AllWords.get(1).equals("hour")) || (AllWords.get(1).equals("hours"))) && (AllWords.size()>=3 && isNumeric(AllWords.get(2))) && !flag && alarmFlag)
@@ -448,7 +474,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 }
                 Toast.makeText(getApplicationContext(), "Opening camera", Toast.LENGTH_LONG).show();
             }
-            else if(result.equals("play music") && !flag)
+            else if( (result.equals("play music")|| result.equals("music player"))&& !flag)
             {
                 textToSpeech.speak("Opening music player", TextToSpeech.QUEUE_ADD, null);
                 flag = true;
@@ -571,6 +597,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
             }
 
         }
+        getMostUsedPhrases();
         return -1;
     }
 
