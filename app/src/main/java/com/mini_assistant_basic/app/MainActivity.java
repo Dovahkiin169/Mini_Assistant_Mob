@@ -142,10 +142,8 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-
         if (resultCode == RESULT_OK && data != null) {
             PhraseGetter(data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS));
-
         } else {
             Toast.makeText(getApplicationContext(), "Sorry, I didn't catch that! Please try again", Toast.LENGTH_LONG).show();
         }
@@ -242,6 +240,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                                 startActivityForResult(intent, 10);
                             }
                         }, 2000);
+                        flag = true;
                         alarmFlag = true;
                         if(!history_adder) {
                             AllhistoryView.add(0, "["+formatDate.format(new Date())+ "] " + "Alarm");
@@ -416,7 +415,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 String search = "";
                 for ( int i=2; i < AllWords.size(); i++)
                 {
-                    search = search + AllWords.get(i);
+                    search = search +" "+ AllWords.get(i);
                 }
 
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(google+search));
@@ -430,7 +429,7 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                 }
                 flag = true;
-                Toast.makeText(getApplicationContext(), "Opening a browser", Toast.LENGTH_LONG).show();
+                Toast.makeText(getApplicationContext(), "Searching", Toast.LENGTH_LONG).show();
             }
             else if ( isNumeric(AllWords.get(0)) && (AllWords.get(1).equals("a.m.") || AllWords.get(1).equals("p.m.") || (AllWords.get(1).equals("hour")) || (AllWords.get(1).equals("hours"))) && (AllWords.size()>=3 && isNumeric(AllWords.get(2))) && !flag && alarmFlag)
             {
@@ -487,6 +486,15 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                     Utility.setHistoryData(getApplicationContext(), AllhistoryView, getString(R.string.HistoryKey));
                 }
                 Toast.makeText(getApplicationContext(), "Opening music player", Toast.LENGTH_LONG).show();
+            }
+            if(!flag)
+            {
+                if(!alarmFlag)
+                {
+                    Toast.makeText(getApplicationContext(), "Sorry, i don't understand, but you can try search for it", Toast.LENGTH_LONG).show();
+                    textToSpeech.speak("Sorry, i don't understand", TextToSpeech.QUEUE_ADD, null);
+                    flag = true;
+                }
             }
         }
         else
@@ -595,7 +603,18 @@ public class MainActivity extends AppCompatActivity implements TextToSpeech.OnIn
                 }
                 Toast.makeText(getApplicationContext(), "Opening music player", Toast.LENGTH_LONG).show();
             }
-
+            else
+            {
+                if(!flag)
+                {
+                    if(!alarmFlag)
+                    {
+                        Toast.makeText(getApplicationContext(), "Sorry, i don't understand", Toast.LENGTH_LONG).show();
+                        textToSpeech.speak("Sorry, i don't understand", TextToSpeech.QUEUE_ADD, null);
+                        flag = true;
+                    }
+                }
+            }
         }
         getMostUsedPhrases();
         return -1;
